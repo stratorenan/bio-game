@@ -1,0 +1,8 @@
+{
+    "accessibility.signals.chatResponseReceived": {
+        "sound": "on"
+    },
+    "github.copilot.chat.skills": true,
+    "chat.promptFiles": true,
+    "github.copilot.chat.codeGeneration.useInstructionFiles": true
+}

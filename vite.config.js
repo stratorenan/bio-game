@@ -14,7 +14,8 @@ export default {
     {
         // https: true,
         host: true, // Open to local network and display URL
-        open: true // Open in browser
+        open: true, // Open in browser
+        port: 1234
     },
     build:
     {
