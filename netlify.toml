@@ -1,0 +1,25 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+  VITE_COMPRESSED = "1"
+
+# SPA fallback (safe for a single-page app)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Correct MIME type for Rapier's wasm module
+[[headers]]
+  for = "/*.wasm"
+  [headers.values]
+    Content-Type = "application/wasm"
+
+# Long cache for hashed build assets
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
