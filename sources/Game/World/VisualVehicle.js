@@ -103,6 +103,42 @@ export class VisualVehicle
 
         // Chassis
         this.parts.chassis.rotation.reorder('YXZ')
+
+        // Recenter chassis geometry vertically. The designer's export has the body's
+        // world-space Y offset baked into mesh vertices (body bottom sits around +0.3
+        // instead of centered on origin), which makes the car float above the wheels.
+        // Compute the chassis bounding box and translate all child geometry so the
+        // chassis origin sits roughly at the body's center.
+        {
+            const chassisBox = new THREE.Box3()
+            this.parts.chassis.traverse((child) =>
+            {
+                if(child.isMesh && child.geometry)
+                {
+                    child.geometry.computeBoundingBox()
+                    chassisBox.union(child.geometry.boundingBox)
+                }
+            })
+
+            if(!chassisBox.isEmpty())
+            {
+                const center = new THREE.Vector3()
+                chassisBox.getCenter(center)
+                // Recenter horizontally (X forward/back) and vertically (Y),
+                // keep Z (side) as designed.
+                const offset = new THREE.Matrix4().makeTranslation(-center.x, -center.y, 0)
+                this.parts.chassis.traverse((child) =>
+                {
+                    if(child.isMesh && child.geometry)
+                    {
+                        child.geometry.applyMatrix4(offset)
+                        child.geometry.computeBoundingBox()
+                        child.geometry.computeBoundingSphere()
+                    }
+                })
+            }
+        }
+
         this.game.materials.updateObject(this.parts.chassis)
         this.game.scene.add(this.parts.chassis)
 
@@ -123,6 +159,57 @@ export class VisualVehicle
             this.parts.backLights.visible = false
 
         // Wheel
+        // Bake the container's transform into its direct children so designer-baked
+        // offset/scale/rotation doesn't interfere with physics-driven positioning.
+        const wc = this.parts.wheelContainer
+        wc.updateMatrix()
+        if(!wc.matrix.equals(new THREE.Matrix4()))
+        {
+            // Apply wc.matrix to each DIRECT child only (descendants inherit via hierarchy)
+            for(const child of [...wc.children])
+            {
+                child.applyMatrix4(wc.matrix)
+            }
+            wc.position.set(0, 0, 0)
+            wc.rotation.set(0, 0, 0)
+            wc.scale.set(1, 1, 1)
+            wc.updateMatrix()
+        }
+
+        // Recenter wheel geometry at origin. The designer's export has the wheel's
+        // world-space position baked into mesh vertices, so we find the wheel's
+        // actual bounding-box center and translate every wheel geometry by -center.
+        {
+            const wheelBox = new THREE.Box3()
+            let foundWheel = false
+            wc.traverse((child) =>
+            {
+                if(child.isMesh && /^wheelCylinder|^wheelPainted|^wheel[._\d]/i.test(child.name))
+                {
+                    child.geometry.computeBoundingBox()
+                    const worldBox = child.geometry.boundingBox.clone()
+                    wheelBox.union(worldBox)
+                    foundWheel = true
+                }
+            })
+
+            if(foundWheel && !wheelBox.isEmpty())
+            {
+                const center = new THREE.Vector3()
+                wheelBox.getCenter(center)
+                const offset = new THREE.Matrix4().makeTranslation(-center.x, -center.y, -center.z)
+                wc.traverse((child) =>
+                {
+                    if(child.isMesh && child.geometry)
+                    {
+                        child.geometry.applyMatrix4(offset)
+                        child.geometry.computeBoundingBox()
+                        child.geometry.computeBoundingSphere()
+                    }
+                })
+            }
+        }
+
         this.game.materials.updateObject(this.parts.wheelContainer)
     }
 
