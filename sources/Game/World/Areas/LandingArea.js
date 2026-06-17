@@ -5,6 +5,7 @@ import { InteractivePoints } from '../../InteractivePoints.js'
 import { Area } from './Area.js'
 import gsap from 'gsap'
 import { MeshDefaultMaterial } from '../../Materials/MeshDefaultMaterial.js'
+import { LandingLogo } from './LandingLogo.js'
 
 export class LandingArea extends Area
 {
@@ -14,27 +15,18 @@ export class LandingArea extends Area
 
         this.localTime = uniform(0)
 
-        this.setLetters()
+        this.setLogo()
         this.setKiosk()
         this.setControls()
         this.setBonfire()
         this.setAchievement()
     }
 
-    setLetters()
+    setLogo()
     {
-        const references = this.references.items.get('letters')
-
-        for(const reference of references)
-        {
-            const physical = reference.userData.object.physical
-            physical.colliders[0].setActiveEvents(this.game.RAPIER.ActiveEvents.CONTACT_FORCE_EVENTS)
-            physical.colliders[0].setContactForceEventThreshold(5)
-            physical.onCollision = (force, position) =>
-            {
-                this.game.audio.groups.get('hitBrick').playRandomNext(force, position)
-            }
-        }
+        // Replace the original "BRUNO SIMON" letter blocks with the Biologistica logo.
+        const references = this.references.items.get('letters') || []
+        this.logo = new LandingLogo(references)
     }
 
     setKiosk()

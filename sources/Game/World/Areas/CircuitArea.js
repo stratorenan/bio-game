@@ -55,9 +55,93 @@ export class CircuitArea extends Area
         this.setPodium()
         this.setData()
         this.setAchievement()
+        this.setTentLogos()
 
         this.game.materials.getFromName('circuitBrand').map.minFilter = THREE.LinearFilter
         this.game.materials.getFromName('circuitBrand').map.magFilter = THREE.LinearFilter
+    }
+
+    /**
+     * Rebrands the two sponsor tents (WebGL / WebGPU canopies) with the Biologistica logo by
+     * swapping the image of the textures the `circuitWebgl` / `circuitWebgpu` materials sample.
+     * The original logos are PNG textures embedded in `areas.glb`; rather than touching the GLB we
+     * replace the pixels of the in-memory texture in place. MeshDefaultMaterial bakes its color into
+     * `outputNode` at construction (sampling `texture(material.map)`), so mutating that same texture
+     * object's image — instead of reassigning the color node — is what actually updates the canopy.
+     * New textures are authored at the same size and on the same canopy background (#463f35) as the
+     * originals, so the existing canopy UVs keep the logo centered and undistorted.
+     */
+    setTentLogos()
+    {
+        const loader = this.game.resourcesLoader.getLoader('texture')
+
+        const apply = (materialName, path) =>
+        {
+            const material = this.game.materials.getFromName(materialName)
+            if(!material || !material.map)
+                return
+
+            const map = material.map
+
+            loader.load(path, (loaded) =>
+            {
+                // Replace the pixels of the existing texture; keep its glTF sampling (flipY, UVs)
+                map.image = loaded.image
+                map.colorSpace = THREE.SRGBColorSpace
+                map.magFilter = THREE.LinearFilter
+                map.minFilter = THREE.LinearMipmapLinearFilter
+                map.generateMipmaps = true
+                map.needsUpdate = true
+                map.source.needsUpdate = true
+            })
+        }
+
+        apply('circuitWebgl', 'circuit/tent-logo-webgl.png')
+        apply('circuitWebgpu', 'circuit/tent-logo-webgpu.png')
+
+        // The WebGPU canopy tiles its texture ~1.5x more than the WebGL one (UV span ≈ 3.5 vs 2.3),
+        // so the same logo reads noticeably smaller there. Scale that canopy's UVs toward the logo
+        // center to enlarge it and roughly match the WebGL tent.
+        this.enlargeCanopyLogo('Cylinder.037', 0.66)
+    }
+
+    /**
+     * Scales a canopy mesh's UVs toward the texture center (0.5, 0.5) by `factor` (<1 enlarges the
+     * centered logo). Matches by sanitized object name (GLTFLoader strips dots: "Cylinder.037" ->
+     * "Cylinder037"). The logo is composited at the texture center, so scaling around (0.5, 0.5)
+     * keeps it centered while growing it; areas outside [0,1] clamp to the canopy background color.
+     */
+    enlargeCanopyLogo(objectName, factor)
+    {
+        const normalize = (name) => (name || '').toLowerCase().replace(/[^a-z0-9]/g, '')
+        const target = normalize(objectName)
+
+        const scaleMeshUv = (mesh) =>
+        {
+            const uv = mesh.geometry && mesh.geometry.attributes && mesh.geometry.attributes.uv
+            if(!uv)
+                return
+
+            for(let i = 0; i < uv.count; i++)
+            {
+                uv.setX(i, 0.5 + (uv.getX(i) - 0.5) * factor)
+                uv.setY(i, 0.5 + (uv.getY(i) - 0.5) * factor)
+            }
+            uv.needsUpdate = true
+        }
+
+        for(const object of this.objects.items)
+        {
+            const root = object.visual && object.visual.object3D
+            if(!root)
+                continue
+
+            root.traverse((child) =>
+            {
+                if(child.isMesh && normalize(child.name) === target)
+                    scaleMeshUv(child)
+            })
+        }
     }
 
     setSounds()
@@ -582,7 +666,7 @@ export class CircuitArea extends Area
     {
         this.interactivePoint = this.game.interactivePoints.create(
             this.references.items.get('interactivePoint')[0].position,
-            'Start race!',
+            'Coletar amostra!',
             InteractivePoints.ALIGN_RIGHT,
             InteractivePoints.STATE_CONCEALED,
             () =>
