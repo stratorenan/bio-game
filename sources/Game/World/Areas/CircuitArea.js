@@ -69,7 +69,10 @@ export class CircuitArea extends Area
      * `outputNode` at construction (sampling `texture(material.map)`), so mutating that same texture
      * object's image — instead of reassigning the color node — is what actually updates the canopy.
      * New textures are authored at the same size and on the same canopy background (#463f35) as the
-     * originals, so the existing canopy UVs keep the logo centered and undistorted.
+     * originals. The canopy uses a planar UV unwrap: the road-facing front slope samples the full
+     * texture, while the other roof slopes only sample the lower texture band (V < ~0.40). To keep
+     * the logo off those slopes (it previously smeared into white/red "stripes"), each texture
+     * composites the logo into the front-only band (V ≈ 0.48–0.93) instead of the centre.
      */
     setTentLogos()
     {
@@ -98,50 +101,6 @@ export class CircuitArea extends Area
 
         apply('circuitWebgl', 'circuit/tent-logo-webgl.png')
         apply('circuitWebgpu', 'circuit/tent-logo-webgpu.png')
-
-        // The WebGPU canopy tiles its texture ~1.5x more than the WebGL one (UV span ≈ 3.5 vs 2.3),
-        // so the same logo reads noticeably smaller there. Scale that canopy's UVs toward the logo
-        // center to enlarge it and roughly match the WebGL tent.
-        this.enlargeCanopyLogo('Cylinder.037', 0.66)
-    }
-
-    /**
-     * Scales a canopy mesh's UVs toward the texture center (0.5, 0.5) by `factor` (<1 enlarges the
-     * centered logo). Matches by sanitized object name (GLTFLoader strips dots: "Cylinder.037" ->
-     * "Cylinder037"). The logo is composited at the texture center, so scaling around (0.5, 0.5)
-     * keeps it centered while growing it; areas outside [0,1] clamp to the canopy background color.
-     */
-    enlargeCanopyLogo(objectName, factor)
-    {
-        const normalize = (name) => (name || '').toLowerCase().replace(/[^a-z0-9]/g, '')
-        const target = normalize(objectName)
-
-        const scaleMeshUv = (mesh) =>
-        {
-            const uv = mesh.geometry && mesh.geometry.attributes && mesh.geometry.attributes.uv
-            if(!uv)
-                return
-
-            for(let i = 0; i < uv.count; i++)
-            {
-                uv.setX(i, 0.5 + (uv.getX(i) - 0.5) * factor)
-                uv.setY(i, 0.5 + (uv.getY(i) - 0.5) * factor)
-            }
-            uv.needsUpdate = true
-        }
-
-        for(const object of this.objects.items)
-        {
-            const root = object.visual && object.visual.object3D
-            if(!root)
-                continue
-
-            root.traverse((child) =>
-            {
-                if(child.isMesh && normalize(child.name) === target)
-                    scaleMeshUv(child)
-            })
-        }
     }
 
     setSounds()

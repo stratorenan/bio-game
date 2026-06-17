@@ -248,10 +248,15 @@ map by **reference name** (e.g. `start`, `startingLights`, `checkpoint…`, `roa
 - The two sponsor **tents** (the WebGL / WebGPU canopies) are rebranded to **Biologistica** at
   runtime by `setTentLogos()`. Rather than editing the GLB, it swaps the *image* of the textures
   the `circuitWebgl` / `circuitWebgpu` materials sample (`static/circuit/tent-logo-webgl.png` /
-  `tent-logo-webgpu.png`, white logo on the canopy's `#463f35` background). The WebGPU canopy tiles
-  its texture ~1.5× more, so `enlargeCanopyLogo('Cylinder.037', 0.66)` scales that mesh's UVs toward
-  the logo center so both tents read at a matching size. To re-skin: replace those two PNGs (keep the
-  exact dimensions 256×128 / 128×128 and the canopy background) and/or tune the enlarge factor.
+  `tent-logo-webgpu.png`, brand-red logo on the canopy's `#463f35` background). The canopy uses a
+  **planar UV unwrap**: only the road-facing front slope samples the full texture, while the other
+  roof slopes sample just the lower texture band (V < ~0.40). A centered logo therefore smears its
+  lower edge onto the side slopes as **"stripes"**. To avoid this, each PNG composites the logo into
+  the **front-only band** (V ≈ 0.48–0.93; i.e. the lower portion of the image), horizontally centred
+  with margins so the clamped texture edges stay background. The WebGPU logo is authored ~1.5× wider
+  in texture space (its canopy tiles ~1.5× more) so both tents read at a matching on-screen size — no
+  runtime UV scaling is used. To re-skin: replace those two PNGs (keep dims 256×128 / 128×128, the
+  `#463f35` background, and the logo within the V ≈ 0.48–0.93 band).
 
 To tune the race, edit checkpoint handling, timer, and `finish()` in this file; to move the
 track, edit the corresponding reference meshes in `static/areas/areas.glb` (§10–11).
@@ -371,7 +376,7 @@ The game is **not yet rebranded**. To convert it from "Bruno Simon's folio" to "
 - **Reshape the map** → follow `handoff-map-design/MAP_BRIEF.md`.
 - **Move / replace the building next to the race** → `World/Building.js` (position constants near the top, or drag live via the `🏢 Building` debug panel). Swap the procedural mesh for a loaded `.glb` when ready.
 - **Change the landing logo / its placement** → `World/Areas/LandingLogo.js` (tweakables near the top, or the `🅱️ Logo` debug panel). Replace `biologistica-logo.svg` to change the artwork.
-- **Re-skin the race sponsor tents** → replace `static/circuit/tent-logo-webgl.png` / `tent-logo-webgpu.png` (keep 256×128 / 128×128 and the `#463f35` background); logic in `CircuitArea.setTentLogos()` / `enlargeCanopyLogo()` (§9).
+- **Re-skin the race sponsor tents** → replace `static/circuit/tent-logo-webgl.png` / `tent-logo-webgpu.png` (keep 256×128 / 128×128, the `#463f35` background, and the logo inside the V ≈ 0.48–0.93 front-only band to avoid roof "stripes"); logic in `CircuitArea.setTentLogos()` (§9).
 - **Rebrand to Biologistica** → §13.
 - **Open the debug panel** → add `#debug` to the URL; press `H` to show/hide.
 - **Add per-frame logic** → `ticker.events.on('tick', fn, <priority>)` with the right slot (§5).
