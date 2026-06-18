@@ -55,52 +55,9 @@ export class CircuitArea extends Area
         this.setPodium()
         this.setData()
         this.setAchievement()
-        this.setTentLogos()
 
         this.game.materials.getFromName('circuitBrand').map.minFilter = THREE.LinearFilter
         this.game.materials.getFromName('circuitBrand').map.magFilter = THREE.LinearFilter
-    }
-
-    /**
-     * Rebrands the two sponsor tents (WebGL / WebGPU canopies) with the Biologistica logo by
-     * swapping the image of the textures the `circuitWebgl` / `circuitWebgpu` materials sample.
-     * The original logos are PNG textures embedded in `areas.glb`; rather than touching the GLB we
-     * replace the pixels of the in-memory texture in place. MeshDefaultMaterial bakes its color into
-     * `outputNode` at construction (sampling `texture(material.map)`), so mutating that same texture
-     * object's image — instead of reassigning the color node — is what actually updates the canopy.
-     * New textures are authored at the same size and on the same canopy background (#463f35) as the
-     * originals. The canopy uses a planar UV unwrap: the road-facing front slope samples the full
-     * texture, while the other roof slopes only sample the lower texture band (V < ~0.40). To keep
-     * the logo off those slopes (it previously smeared into white/red "stripes"), each texture
-     * composites the logo into the front-only band (V ≈ 0.48–0.93) instead of the centre.
-     */
-    setTentLogos()
-    {
-        const loader = this.game.resourcesLoader.getLoader('texture')
-
-        const apply = (materialName, path) =>
-        {
-            const material = this.game.materials.getFromName(materialName)
-            if(!material || !material.map)
-                return
-
-            const map = material.map
-
-            loader.load(path, (loaded) =>
-            {
-                // Replace the pixels of the existing texture; keep its glTF sampling (flipY, UVs)
-                map.image = loaded.image
-                map.colorSpace = THREE.SRGBColorSpace
-                map.magFilter = THREE.LinearFilter
-                map.minFilter = THREE.LinearMipmapLinearFilter
-                map.generateMipmaps = true
-                map.needsUpdate = true
-                map.source.needsUpdate = true
-            })
-        }
-
-        apply('circuitWebgl', 'circuit/tent-logo-webgl.png')
-        apply('circuitWebgpu', 'circuit/tent-logo-webgpu.png')
     }
 
     setSounds()
@@ -827,6 +784,38 @@ export class CircuitArea extends Area
     setBanners()
     {
         this.banners = this.references.items.get('banners')
+
+        // Re-skin the THREE.JS flag banners with the Biologistica banner at runtime. This is done in
+        // code (not by editing the baked texture inside areas.glb) because modifying that
+        // boot-critical model hangs the loading screen. The texture is loaded lazily so it can never
+        // block boot, and only the flag meshes are reskinned.
+        if(this.banners)
+        {
+            const loader = this.game.resourcesLoader.getLoader('texture')
+            loader.load(
+                'areas/circuitBannerBiologistica.png?cb=1',
+                (bannerTexture) =>
+                {
+                    bannerTexture.colorSpace = THREE.SRGBColorSpace
+                    bannerTexture.flipY = false
+                    bannerTexture.wrapS = THREE.ClampToEdgeWrapping
+                    bannerTexture.wrapT = THREE.ClampToEdgeWrapping
+
+                    const bannerMaterial = new MeshDefaultMaterial({
+                        colorNode: texture(bannerTexture).rgb,
+                    })
+
+                    for(const banner of this.banners)
+                        banner.traverse((child) =>
+                        {
+                            if(child.isMesh)
+                                child.material = bannerMaterial
+                        })
+                },
+                undefined,
+                () => console.warn('Circuit > Could not load Biologistica banner texture'),
+            )
+        }
     }
 
     setLeaderboard()

@@ -1,0 +1,38 @@
+<svg xmlns="http://w3.org" viewBox="0 0 800 300" width="100%" height="100%">
+  <defs>
+    <!-- Gradiente azul vibrante para o número 30 -->
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00D2FF" />
+      <stop offset="100%" stop-color="#0066CC" />
+    </linearGradient>
+  </defs>
+
+  <g id="logo-cbra-30">
+    <!-- LETRA C (Estilizada com abertura) -->
+    <path d="M 160 70 A 75 75 0 1 0 160 210 L 175 185 A 45 45 0 1 1 175 95 Z" fill="#000000" />
+    
+    <!-- ELEMENTO ESPERMATOZOIDE (Inserido no C) -->
+    <!-- Cauda/Linha fluida -->
+    <path d="M 230 40 Q 200 50 175 110 Q 155 155 145 155" fill="none" stroke="#0055FF" stroke-width="4" stroke-linecap="round" />
+    <!-- Cabeça azul claro -->
+    <ellipse cx="145" cy="160" rx="14" ry="9" transform="rotate(-30 145 160)" fill="#00D2FF" />
+
+    <!-- LETRA B -->
+    <path d="M 210 75 L 270 75 C 290 75 300 85 300 97 C 300 108 290 115 275 117 C 295 119 305 128 305 143 C 305 158 290 165 270 165 L 210 165 Z M 238 95 L 238 110 L 265 110 C 272 110 276 106 276 102 C 276 98 272 95 265 95 Z M 238 128 L 238 145 L 268 145 C 275 145 280 141 280 136 C 280 131 275 128 268 128 Z" fill="#000000" />
+
+    <!-- LETRA R -->
+    <path d="M 330 75 L 390 75 C 415 75 425 88 425 105 C 425 120 415 130 395 133 L 430 165 L 395 165 L 365 135 L 358 135 L 358 165 L 330 165 Z M 358 95 L 358 115 L 385 115 C 392 115 397 111 397 105 C 397 99 392 95 385 95 Z" fill="#000000" />
+
+    <!-- LETRA A -->
+    <path d="M 475 75 L 505 75 L 545 165 L 515 165 L 507 145 L 473 145 L 465 165 L 435 165 Z M 478 123 L 502 123 L 490 93 Z" fill="#000000" />
+
+    <!-- NÚMERO 3 (Com gradiente) -->
+    <path d="M 540 85 C 540 68 560 55 585 55 C 610 55 625 70 625 88 C 625 102 615 112 600 115 C 618 118 630 130 630 148 C 630 170 610 185 585 185 C 555 185 538 168 538 150 L 568 150 C 568 158 575 163 585 163 C 595 163 602 155 602 145 C 602 133 592 128 578 128 L 565 128 L 565 105 L 578 105 C 590 105 598 100 598 90 C 598 82 592 75 583 75 C 575 75 568 80 568 85 Z" fill="url(#blueGrad)" />
+
+    <!-- NÚMERO 0 (Com gradiente) -->
+    <path d="M 620 120 C 620 78 642 55 675 55 C 708 55 730 78 730 120 C 730 162 708 185 675 185 C 642 185 620 162 620 120 Z M 650 120 C 650 148 658 163 675 163 C 692 163 700 148 700 120 C 700 92 692 77 675 77 C 658 77 650 92 650 120 Z" fill="url(#blueGrad)" />
+
+    <!-- TEXTO "anos" (Estilo manuscrito elegante) -->
+    <text x="690" y="155" font-family="'Brush Script MT', 'Great Vibes', 'Comic Sans MS', cursive" font-size="34" font-weight="bold" font-style="italic" fill="#111111" transform="rotate(-5 690 155)">anos</text>
+  </g>
+</svg>
