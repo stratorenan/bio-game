@@ -16,7 +16,7 @@ export class Building
         this.game = Game.getInstance()
 
         // Midpoint between the two THREE.JS flag banners (refBanners @ z≈0.04, refBanners.001 @ z≈11.63).
-        this.position = new THREE.Vector3(-19.28, 0, 5.84)
+        this.position = new THREE.Vector3(-20.3, 0, 5.8)
         this.rotationY = 0
 
         this.setMaterials()
