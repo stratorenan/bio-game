@@ -5,234 +5,234 @@ export default
 [
     [
         'landingLeave',
-        'I’m going on an adventure!',
-        'Get out of the landing area.',
+        'Vou viver uma aventura!',
+        'Saia da área inicial.',
         1
     ],
     [
         'areas',
-        'Traveler',
-        'Vist every area.',
+        'Viajante',
+        'Visite todas as áreas.',
         13,
         true // Unique
     ],
     [
         'projects',
-        'But can you fix the wifi?',
-        'Check every project in the <strong>projects</strong> area.',
+        'Mas você conserta o wi-fi?',
+        'Veja todos os projetos na área de <strong>projetos</strong>.',
         projectsData.length,
         true // Unique
     ],
     [
         'lab',
-        'I\'m a bit of a scientist myself',
-        'Check every project in the <strong>lab</strong> area.',
+        'Eu também sou meio cientista',
+        'Veja todos os projetos na área do <strong>laboratório</strong>.',
         labData.length,
         true // Unique
     ],
     [
         'cookie',
-        'Wake & bake',
-        'Accept <strong>1</strong> cookies.',
+        'Levanta e assa',
+        'Aceite <strong>1</strong> cookie.',
         1
     ],
     [
         'cookie',
-        'Making some dough',
-        'Accept <strong>10</strong> cookies.',
+        'Juntando uma grana',
+        'Aceite <strong>10</strong> cookies.',
         10
     ],
     [
         'cookie',
-        'So baked right now',
-        'Accept <strong>100</strong> cookies.',
+        'Totalmente assado',
+        'Aceite <strong>100</strong> cookies.',
         100
     ],
     [
         'cookie',
         'Cookie Clicker',
-        'Accept <strong>1000</strong> cookies.',
+        'Aceite <strong>1000</strong> cookies.',
         1000
     ],
     [
         'whisper',
-        'It\'s About Sending A Message',
-        'Post a whisper.',
+        'É sobre mandar um recado',
+        'Deixe um sussurro.',
         1
     ],
     [
         'sea',
-        'Under the sea',
-        'Go make friend with the fishes.',
+        'No fundo do mar',
+        'Vá fazer amizade com os peixes.',
         1
     ],
     [
         'upsideDown',
-        'Turtle',
-        'Get upside down.',
+        'Tartaruga',
+        'Fique de cabeça para baixo.',
         1
     ],
     [
         'frontFlip',
-        'Teeth first',
-        'Do a front flip and land on your 4 wheels.',
+        'De dente primeiro',
+        'Dê um giro para a frente e caia sobre as 4 rodas.',
         1
     ],
     [
         'backFlip',
-        'Flip of faith',
-        'Do a back flip and land on your 4 wheels.',
+        'Salto de fé',
+        'Dê um giro para trás e caia sobre as 4 rodas.',
         1
     ],
     [
         'suspensions',
         'Lowrider',
-        'Use the vehicle suspensions.',
+        'Use as suspensões do veículo.',
         4
     ],
     [
         'honk',
-        'Honk',
-        'Honk me like one of your french driver.',
+        'Buzina',
+        'Me buzine como um dos seus motoristas franceses.',
         10
     ],
     [
         'explosiveCrates',
-        'Great Explosion Murder God Dynamight',
-        'Blow up every explosive crate.',
+        'Grande Deus da Explosão, Dinamáite',
+        'Exploda todas as caixas explosivas.',
         20,
         true // Unique
     ],
     [
         'goHigh',
-        'Limit the sky',
-        'Reach <strong>15 meters</strong> high.',
+        'O céu é o limite',
+        'Alcance <strong>15 metros</strong> de altura.',
         15
     ],
     [
         'strike',
-        'F*** it, dude. Let\'s go bowling',
-        'Accomplished a strike.',
+        'Dane-se, cara. Bora jogar boliche',
+        'Faça um strike.',
         1
     ],
     [
         'toiletDown',
-        'Do not disturb',
-        'Knock down the latrine.',
+        'Não perturbe',
+        'Derrube o banheiro.',
         1
     ],
     [
         'circuitFinish',
-        'Participation medal',
-        'Finish a race.',
+        'Medalha de participação',
+        'Termine uma corrida.',
         1
     ],
     [
         'circuitFinishFast',
         'KA-CHOW!',
-        'Finish a race in less than <strong>30s</strong>.',
+        'Termine uma corrida em menos de <strong>30s</strong>.',
         1
     ],
     [
         'circuitLeaderboard',
-        'Early Bird gets the Worm',
-        'Make it to the leaderboard.',
+        'Deus ajuda quem cedo madruga',
+        'Entre no placar de líderes.',
         1
     ],
     [
         'fullDay',
-        'Don’t you have work to do?',
-        'Spend a full day cycle here in one go.',
+        'Você não tem trabalho a fazer?',
+        'Passe um ciclo de dia inteiro aqui de uma vez.',
         1
     ],
     [
         'distanceDriven',
-        'Baby step',
-        'Drive 1km.',
+        'Primeiros passos',
+        'Dirija 1km.',
         1
     ],
     [
         'distanceDriven',
-        'Are we there yet?',
-        'Drive 10km.',
+        'Já chegamos?',
+        'Dirija 10km.',
         10
     ],
     [
         'distanceDriven',
-        'Honey, I’m home!',
-        'Drive 100km.',
+        'Querida, cheguei!',
+        'Dirija 100km.',
         100
     ],
     [
         'sacrifice',
-        'One for the god of Chaos',
-        'Sacrifice yourself into the altar.',
+        'Um para o deus do Caos',
+        'Sacrifique-se no altar.',
         1
     ],
     [
         'cataclysm',
-        'Witness me!',
-        'Witness a cataclysm',
+        'Testemunhe-me!',
+        'Testemunhe um cataclismo.',
         1
     ],
     [
         'weatherSnow',
-        'Do you want to build a snowman?',
-        'Witness snowy weather.',
+        'Quer construir um boneco de neve?',
+        'Veja um tempo com neve.',
         1
     ],
     [
         'weatherRain',
-        'I’m singing in the rain',
-        'Witness a rainy weather.',
+        'Cantando na chuva',
+        'Veja um tempo chuvoso.',
         1
     ],
     [
         'lightning',
         '1.21 Gigawatts!',
-        'Get hit by a lightning.',
+        'Seja atingido por um raio.',
         1
     ],
     [
         'waterfall',
-        'Gamer instinct',
-        'What did you expect? A treasure?',
+        'Instinto gamer',
+        'O que você esperava? Um tesouro?',
         1
     ],
     [
         'fan',
-        'You’re my only fan',
-        'Spawn a fan.',
+        'Você é meu único fã',
+        'Faça aparecer um ventilador.',
         1
     ],
     [
         'reset',
-        'Clean your room',
-        'Put back everything as it was.',
+        'Arrume seu quarto',
+        'Coloque tudo de volta como estava.',
         1
     ],
     [
         'statueDown',
-        'Revolution!',
-        'Tear that statue down.',
+        'Revolução!',
+        'Derrube aquela estátua.',
         1
     ],
     [
         'konami',
-        'Up up down down…',
-        'You know the rest.',
+        'Cima cima baixo baixo…',
+        'Você sabe o resto.',
         1
     ],
     [
         'debug',
-        'It\'s not a bug, it\'s a feature',
-        'Access the debug UI.',
+        'Não é um bug, é um recurso',
+        'Acesse a interface de debug.',
         1
     ],
     [
         'hacker',
         'Hacker',
-        'This one can’t be achieved.',
+        'Esta não pode ser conquistada.',
         1
     ],
 ]
