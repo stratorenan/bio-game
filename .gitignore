@@ -8,3 +8,5 @@ dist.zip
 .autosave
 .wav
 !static/sounds/music/*.wav
+# Local Netlify folder
+.netlify
