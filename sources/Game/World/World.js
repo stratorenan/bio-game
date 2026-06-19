@@ -30,6 +30,7 @@ import { Benches } from './Benches.js'
 import { Scenery } from './Scenery.js'
 import { Building } from './Building.js'
 import { BiologisticaOffice } from './BiologisticaOffice.js'
+import { Laptop } from './Laptop.js'
 
 export class World
 {
@@ -82,6 +83,7 @@ export class World
             this.areas = new Areas()
             this.building = new Building()
             this.biologisticaOffice = new BiologisticaOffice()
+            this.laptop = new Laptop()
         }
         else if(step === 2)
         {

@@ -793,7 +793,7 @@ export class CircuitArea extends Area
         {
             const loader = this.game.resourcesLoader.getLoader('texture')
             loader.load(
-                'areas/circuitBannerBiologistica.png?cb=1',
+                'areas/circuitBannerBiologistica.png?cb=3',
                 (bannerTexture) =>
                 {
                     bannerTexture.colorSpace = THREE.SRGBColorSpace
@@ -801,8 +801,12 @@ export class CircuitArea extends Area
                     bannerTexture.wrapS = THREE.ClampToEdgeWrapping
                     bannerTexture.wrapT = THREE.ClampToEdgeWrapping
 
+                    // The original baked banner material is double-sided and the flag has a curled top
+                    // tip; keep DoubleSide so the curl renders like the original (logo art is kept out
+                    // of the curl's texture zone to avoid ghosting).
                     const bannerMaterial = new MeshDefaultMaterial({
                         colorNode: texture(bannerTexture).rgb,
+                        side: THREE.DoubleSide,
                     })
 
                     for(const banner of this.banners)

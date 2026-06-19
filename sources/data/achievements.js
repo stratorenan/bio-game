@@ -100,7 +100,7 @@ export default
         'explosiveCrates',
         'Grande Deus da Explosão, Dinamáite',
         'Exploda todas as caixas explosivas.',
-        20,
+        17,
         true // Unique
     ],
     [

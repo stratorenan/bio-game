@@ -12,6 +12,14 @@ export class ExplosiveCrates
         // Base and references
         const [ base, references ] = InstancedGroup.getBaseAndReferencesFromInstances(this.game.resources.explosiveCratesModel.scene.children)
         this.references = references
+
+        // Drop the crates that were authored on top of the Biologistica laptop prop
+        // (Laptop.js @ ~(26.3, 0, -19.2)) so they don't spawn stacked on it. Filtered here, before
+        // the instanced group / physics are built, so they get neither a visual instance nor a body.
+        const laptopXZ = new THREE.Vector2(26.3, - 19.2)
+        this.references = this.references.filter((reference) =>
+            new THREE.Vector2(reference.position.x, reference.position.z).distanceTo(laptopXZ) > 5
+        )
         
         // Setup base
         base.castShadow = true
