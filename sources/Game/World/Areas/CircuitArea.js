@@ -592,7 +592,20 @@ export class CircuitArea extends Area
                 if(sound)
                     sound.play(true)
 
-                this.restart()
+                // Animate the sample box flying into the vehicle, then start the race
+                if(this.game.world.transportBox && this.state === CircuitArea.STATE_PENDING)
+                {
+                    this.interactivePoint.hide()
+                    this.game.player.state = Player.STATE_LOCKED
+                    this.game.world.transportBox.collectInto(this.game.player.position, () =>
+                    {
+                        this.restart()
+                    })
+                }
+                else
+                {
+                    this.restart()
+                }
             },
             () =>
             {
@@ -1450,6 +1463,10 @@ export class CircuitArea extends Area
             // Crates (all crates in the world?)
             this.game.world.explosiveCrates.reset()
 
+            // Transport box => remove from the world while racing
+            if(this.game.world.transportBox)
+                this.game.world.transportBox.hide()
+
             // Weather
             this.game.weather.override.start(
                 {
@@ -1615,6 +1632,10 @@ export class CircuitArea extends Area
                 
                 // Crates (all crates in the world?)
                 this.game.world.explosiveCrates.reset()
+
+                // Transport box => bring it back once the race ends
+                if(this.game.world.transportBox)
+                    this.game.world.transportBox.show()
 
                 // Podium => Show
                 if(!forced)
