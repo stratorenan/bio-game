@@ -20,7 +20,7 @@ export class LandingLogo
 
         // Tweakables
         this.targetWidth = 13      // world units across
-        this.worldDepth = 0.6      // extrusion thickness
+        this.worldDepth = 0.3      // extrusion thickness
         this.rotationOffset = 0    // extra yaw if the sign faces the wrong way
         this.yOffset = 0           // lift/sink to sit on the ground
 

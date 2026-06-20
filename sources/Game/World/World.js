@@ -33,6 +33,7 @@ import { BiologisticaOffice } from './BiologisticaOffice.js'
 import { LabBuilding } from './LabBuilding.js'
 import { Laptop } from './Laptop.js'
 import { TransportBox } from './TransportBox.js'
+import { Fleet } from './Fleet.js'
 
 export class World
 {
@@ -88,6 +89,7 @@ export class World
             this.labBuilding = new LabBuilding()
             this.laptop = new Laptop()
             this.transportBox = new TransportBox()
+            this.fleet = new Fleet()
         }
         else if(step === 2)
         {
