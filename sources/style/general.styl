@@ -183,15 +183,14 @@ a.button
 
     &.is-name-tag
         .input-text
-            width 100px
-            font-size 25px
-            letter-spacing 8px
-            text-transform uppercase
+            width 200px
+            font-size 20px
+            letter-spacing 1px
             font-weight 700
             // padding 0 15px 0 5px
 
             &::placeholder
-                letter-spacing 14px
+                letter-spacing 1px
                 padding-left 4px
 
     > *
@@ -388,4 +387,17 @@ html:not(.is-server-offline) .offline-element
 
 html:not(.is-server-online) .online-element
     display none !important
+
+// Local (offline) leaderboard mode: reveal the circuit name form + leaderboard and hide the
+// "server offline" warnings, without affecting other server-gated features (e.g. whispers).
+html.is-leaderboard-local
+    .circuit-content .offline-element
+    .circuit-end .offline-element
+        display none !important
+
+    .circuit-content .js-leaderboard.online-element
+        display table !important
+
+    .circuit-end.is-top-10 .content .input-group.online-element
+        display flex !important
 

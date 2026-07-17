@@ -1,111 +1,62 @@
 import * as THREE from 'three/webgpu'
 import { InteractivePoints } from '../../InteractivePoints.js'
 import { Area } from './Area.js'
-import { Fn, texture, uv, vec2, vec3, vec4 } from 'three/tsl'
-import gsap from 'gsap'
+import { RadarDish } from '../RadarDish.js'
 
+/**
+ * Formerly the "Time Machine" retro-TV area. The old TV / console / controllers / stool / cups are
+ * removed and replaced by a procedural {@link RadarDish}. The underlying GLB node is still named
+ * "timeMachine", so the area key stays `timeMachine`, but everything the player sees here is now the
+ * radar dish.
+ */
 export class TimeMachineArea extends Area
 {
     constructor(model)
     {
         super(model)
 
+        // Anchor the dish + label on the old cluster centre before the props are removed
+        this.anchorPosition = this.references.items.get('interactivePoint')[0].position.clone()
+
+        this.removeProps()
+        this.setRadarDish()
         this.setInteractivePoint()
-        this.setTV()
         this.setAchievement()
+    }
+
+    // Remove every auto-added prop from the old time-machine set (TV, console, controllers, stool,
+    // cups, boxes…). The invisible zone / interactive-point markers are disabled too; the bounding /
+    // frustum zones themselves are already registered from the reference positions in the base Area.
+    removeProps()
+    {
+        for(const object of this.objects.items)
+            this.game.objects.disable(object)
+
+        this.objects.hideable = []
+    }
+
+    setRadarDish()
+    {
+        const position = new THREE.Vector3(this.anchorPosition.x, 0, this.anchorPosition.z - 0.5)
+
+        this.radarDish = new RadarDish(position, { rotationY: Math.PI * 0.15, tilt: 0.62, sweepSpeed: 0.3 })
     }
 
     setInteractivePoint()
     {
+        // Label-only point (no external link now that the time machine is gone)
         this.interactivePoint = this.game.interactivePoints.create(
-            this.references.items.get('interactivePoint')[0].position,
-            'Time Machine',
+            this.anchorPosition,
+            'Radar',
             InteractivePoints.ALIGN_RIGHT,
-            InteractivePoints.STATE_CONCEALED,
-            () =>
-            {
-                window.open('https://2019.bruno-simon.com')
-            },
-            () =>
-            {
-                this.game.inputs.interactiveButtons.addItems(['interact'])
-            },
-            () =>
-            {
-                this.game.inputs.interactiveButtons.removeItems(['interact'])
-            },
-            () =>
-            {
-                this.game.inputs.interactiveButtons.removeItems(['interact'])
-            }
+            InteractivePoints.STATE_CONCEALED
         )
     }
 
-    setTV()
+    update()
     {
-        let canCollide = true
-        let collideIndex = 0
-
-        const screenTextures = [
-            this.game.resources.timeMachineScreenFolioTexture,
-            this.game.resources.timeMachineScreenMGSTexture,
-        ]
-
-        const alertSound = this.game.audio.register({
-            path: 'sounds/tv/alert.mp3',
-            autoplay: false,
-            loop: false,
-            volume: 0.3,
-            preload: true
-        })
-    
-
-        const tv = this.references.items.get('tv')[0]
-        tv.userData.object.physical.onCollision = (force, position) =>
-        {
-            if(canCollide)
-            {
-                canCollide = false
-                collideIndex++
-                material.outputNode = screenOutputNode()
-                material.needsUpdate = true
-
-                const clickSound = this.game.audio.groups.get('click')
-                if(clickSound)
-                    clickSound.play(true)
-
-                if(collideIndex === 1)
-                    alertSound.play()
-
-                gsap.delayedCall(1, () =>
-                {
-                    canCollide = true
-                })
-            }
-        }
-
-        const screenMesh = this.references.items.get('screen')[0]
-
-        const material = new THREE.MeshBasicNodeMaterial()
-        const screenOutputNode = Fn(() =>
-        {
-            const baseUv = vec2(uv().x, uv().y)
-            
-            const textureColor = texture(screenTextures[collideIndex % screenTextures.length], baseUv)
-
-            const stripes = texture(
-                this.game.noises.perlin,
-                vec2(
-                    baseUv.y.add(this.game.ticker.elapsedScaledUniform.mul(0.1)),
-                    0
-                )
-            ).r.smoothstep(0, 1)
-
-            return vec4(textureColor.rgb.mul(stripes.mul(collideIndex % screenTextures.length === 0 ? 1 : 3).add(1)), 1)
-        })
-        material.outputNode = screenOutputNode()
-
-        screenMesh.material = material
+        if(this.radarDish)
+            this.radarDish.update()
     }
 
     setAchievement()

@@ -12,7 +12,9 @@ export class DayCycles extends Cycles
 {
     constructor()
     {
-        const forcedProgress = import.meta.env.VITE_DAY_CYCLE_PROGRESS ? parseFloat(import.meta.env.VITE_DAY_CYCLE_PROGRESS) : null
+        // Force a permanent daytime (no dusk/night/dawn). A daytime progress value freezes the cycle
+        // so night interval events never trigger. Still overridable through VITE_DAY_CYCLE_PROGRESS.
+        const forcedProgress = import.meta.env.VITE_DAY_CYCLE_PROGRESS ? parseFloat(import.meta.env.VITE_DAY_CYCLE_PROGRESS) : 0.05
         super('🕜 Day Cycles', 4 * 60, forcedProgress, false)
     }
 

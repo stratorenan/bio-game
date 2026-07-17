@@ -18,6 +18,9 @@ export class CircuitArea extends Area
     static STATE_RUNNING = 3
     static STATE_ENDING = 4
 
+    // Maximum race duration in seconds. Once reached, the race is force-finished and reset.
+    static MAX_RACE_TIME = 60
+
     constructor(model)
     {
         super(model)
@@ -53,6 +56,7 @@ export class CircuitArea extends Area
         this.setLeaderboard()
         this.setResetTime()
         this.setPodium()
+        this.setLocalLeaderboard()
         this.setData()
         this.setAchievement()
 
@@ -893,10 +897,10 @@ export class CircuitArea extends Area
         mesh.material = material
 
         const columsSettings = [
-            { align: 'right', x: resolution * 0.125 },
-            { x: resolution * 0.19},
-            { align: 'center', x: resolution * 0.43},
-            { align: 'left', x: resolution * 0.725 },
+            { align: 'right', x: resolution * 0.11 },
+            { x: resolution * 0.145 },
+            { align: 'left', x: resolution * 0.30 },
+            { align: 'right', x: resolution * 0.96 },
         ]
         const interline = resolution / 12
 
@@ -949,11 +953,20 @@ export class CircuitArea extends Area
                                 flagsHeight
                             )
 
-                        context.textAlign = columsSettings[2].align
-                        context.fillText(score[0], columsSettings[2].x, (rank + 0.5) * interline)
+                        // Time (right-aligned) — measured so the name can be fitted next to it
+                        context.textAlign = columsSettings[3].align
+                        const timeString = timeToRaceString(score[2] / 1000)
+                        const timeWidth = context.measureText(timeString).width
+                        context.fillText(timeString, columsSettings[3].x, (rank + 0.5) * interline)
 
+                        // Name (left-aligned, auto-shrunk so long names never reach the time column)
+                        const nameMaxWidth = columsSettings[3].x - timeWidth - columsSettings[2].x - resolution * 0.025
                         context.textAlign = columsSettings[2].align
-                        context.fillText(timeToRaceString(score[2] / 1000), columsSettings[3].x, (rank + 0.5) * interline)
+                        const nameWidth = context.measureText(score[0]).width
+                        if(nameWidth > nameMaxWidth)
+                            context.font = `700 ${(resolution / 14) * (nameMaxWidth / nameWidth)}px "Nunito"`
+                        context.fillText(score[0], columsSettings[2].x, (rank + 0.5) * interline)
+                        context.font = font
 
                         rank++
                     }
@@ -1311,50 +1324,69 @@ export class CircuitArea extends Area
         this.menu.inputGroup = this.endModal.instance.element.querySelector('.js-input-group')
         this.menu.input = this.menu.inputGroup.querySelector('.js-input')
 
-        const sanatize = (text = '', trim = false, limit = false, stripNonLetter = false, toUpper = false) =>
+        const NAME_MIN_LENGTH = 2
+        const NAME_MAX_LENGTH = 12
+
+        const sanatize = (text = '', trim = false, limit = false, stripNonLetter = false) =>
         {
             let sanatized = text
+
+            if(stripNonLetter)
+                // Keep unicode letters and spaces only (names may contain accents and spaces),
+                // and collapse repeated whitespace into a single space.
+                sanatized = sanatized.replace(/[^\p{L} ]/gu, '').replace(/\s+/g, ' ')
+
             if(trim)
                 sanatized = sanatized.trim()
 
-            if(stripNonLetter)
-                sanatized = sanatized.replace(/[^a-z]/gi, '')
-            
             if(limit)
-                sanatized = sanatized.substring(0, 3)
-
-            if(toUpper)
-                sanatized = sanatized.toUpperCase()
+                sanatized = sanatized.substring(0, NAME_MAX_LENGTH)
 
             return sanatized
         }
 
         const submit = () =>
         {
-            const sanatized = sanatize(this.menu.input.value, true, true, true, true)
-            
-            if(sanatized.length === 3 && this.game.server.connected)
+            const sanatized = sanatize(this.menu.input.value, true, true, true)
+
+            if(sanatized.length < NAME_MIN_LENGTH)
+                return
+
+            const countryCode = this.menu.inputFlag.country ? this.menu.inputFlag.country.code : ''
+            const durationMs = Math.round(this.timer.elapsedTime * 1000)
+
+            if(this.game.server.connected)
             {
-                // Insert
+                // Online => send to the leaderboard server
                 this.game.server.send({
                     type: 'circuitInsert',
-                    countryCode: this.menu.inputFlag.country ? this.menu.inputFlag.country.code : '',
+                    countryCode,
                     tag: sanatized,
-                    duration: Math.round(this.timer.elapsedTime * 1000),
+                    duration: durationMs,
                     checkpointTimings: this.checkpoints.timings
                 })
-
-                // Achievement
-                this.game.achievements.setProgress('circuitLeaderboard', 1)
-
-                // Close modal
-                this.game.modals.close()
             }
+            else if(this.local.active)
+            {
+                // Offline => persist to the local leaderboard and refresh the displays
+                this.local.insert(sanatized, countryCode, durationMs)
+                this.local.refresh()
+            }
+            else
+            {
+                return
+            }
+
+            // Achievement
+            this.game.achievements.setProgress('circuitLeaderboard', 1)
+
+            // Close modal
+            this.game.modals.close()
         }
 
         const updateGroup = () =>
         {
-            if(this.menu.input.value.length === 3 && this.game.server.connected)
+            if(this.menu.input.value.trim().length >= NAME_MIN_LENGTH && (this.game.server.connected || this.local.active))
                 this.menu.inputGroup.classList.add('is-valide')
             else
                 this.menu.inputGroup.classList.remove('is-valide')
@@ -1362,7 +1394,7 @@ export class CircuitArea extends Area
 
         this.menu.input.addEventListener('input', () =>
         {
-            const sanatized = sanatize(this.menu.input.value, false, true, true, true)
+            const sanatized = sanatize(this.menu.input.value, false, true, true)
             this.menu.input.value = sanatized
             updateGroup()
         })
@@ -1516,6 +1548,71 @@ export class CircuitArea extends Area
         })
     }
 
+    setLocalLeaderboard()
+    {
+        // Offline fallback for the leaderboard: when no server is connected, scores are stored on this
+        // device (localStorage) so the player can still enter a name after finishing a race.
+        this.local = {}
+        this.local.active = false
+        this.local.storageKey = 'circuitLeaderboardLocal'
+        this.local.maxEntries = 10
+
+        this.local.load = () =>
+        {
+            try
+            {
+                const raw = localStorage.getItem(this.local.storageKey)
+                const scores = raw ? JSON.parse(raw) : []
+                return Array.isArray(scores) ? scores : []
+            }
+            catch(error)
+            {
+                return []
+            }
+        }
+
+        this.local.save = (scores) =>
+        {
+            try
+            {
+                localStorage.setItem(this.local.storageKey, JSON.stringify(scores))
+            }
+            catch(error) {}
+        }
+
+        // Insert a new [ name, countryCode, durationMs ] entry, keep the fastest, cap to maxEntries
+        this.local.insert = (name, countryCode, durationMs) =>
+        {
+            const scores = this.local.load()
+            scores.push([ name, countryCode || '', durationMs ])
+            scores.sort((a, b) => a[2] - b[2])
+            const top = scores.slice(0, this.local.maxEntries)
+            this.local.save(top)
+            return top
+        }
+
+        // Push the stored scores onto the billboard + menu leaderboards
+        this.local.refresh = () =>
+        {
+            const scores = this.local.load()
+            this.leaderboard.update(scores)
+            this.menu.updateLeaderboard(scores)
+        }
+
+        this.local.activate = () =>
+        {
+            this.local.active = true
+            document.documentElement.classList.add('is-leaderboard-local')
+            this.local.refresh()
+        }
+
+        this.local.deactivate = () =>
+        {
+            this.local.active = false
+            document.documentElement.classList.remove('is-leaderboard-local')
+        }
+    }
+
     setData()
     {
         // Server message event
@@ -1524,6 +1621,7 @@ export class CircuitArea extends Area
             // Init and insert
             if(data.type === 'init')
             {
+                this.local.deactivate()
                 this.resetTime.activate(data.circuitResetTime)
                 this.leaderboard.update(data.circuitLeaderboard)
                 this.menu.updateLeaderboard(data.circuitLeaderboard)
@@ -1535,20 +1633,31 @@ export class CircuitArea extends Area
             }
         })
 
-        // Server disconnected
+        // Server connected => leave local mode (the server owns the leaderboard)
+        this.game.server.events.on('connected', () =>
+        {
+            this.local.deactivate()
+        })
+
+        // Server disconnected => fall back to the local leaderboard
         this.game.server.events.on('disconnected', () =>
         {
             this.resetTime.deactivate()
-            this.leaderboard.update(null)
-            this.menu.updateLeaderboard(null)
+            this.local.activate()
         })
 
         // Message already received
         if(this.game.server.initData)
         {
+            this.local.deactivate()
             this.resetTime.activate(this.game.server.initData.circuitResetTime)
             this.leaderboard.update(this.game.server.initData.circuitLeaderboard)
             this.menu.updateLeaderboard(this.game.server.initData.circuitLeaderboard)
+        }
+        // No server data yet => start with the local leaderboard
+        else if(!this.game.server.connected)
+        {
+            this.local.activate()
         }
     }
 
@@ -1659,8 +1768,8 @@ export class CircuitArea extends Area
                     })
                 }
 
-                // Circuit en modal (if server connected)
-                if(this.game.server.connected && !forced)
+                // Circuit end modal (server leaderboard, or local leaderboard when offline)
+                if(!forced && (this.game.server.connected || this.local.active))
                 {
                     gsap.delayedCall(1, () =>
                     {
@@ -1688,6 +1797,13 @@ export class CircuitArea extends Area
     {
         if(this.state === CircuitArea.STATE_RUNNING)
         {
+            // Time limit > Force-finish and reset the race after the maximum duration
+            if(this.timer.running && (this.game.ticker.elapsed - this.timer.startTime) >= CircuitArea.MAX_RACE_TIME)
+            {
+                this.finish(true)
+                return
+            }
+
             // Checkpoints
             for(const checkpoint of this.checkpoints.items)
             {
